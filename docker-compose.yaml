@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  netA-localproxy.envoy.localhost:
+    image: envoyproxy/envoy-dev:latest
+    volumes:
+      - ./netA-localproxy/envoy.yaml:/etc/envoy.yaml
+    ports:
+      - "3333:3333"
+    command: ["/usr/local/bin/envoy", "-c /etc/envoy.yaml"]
+    networks:
+      netA:
+      netB:
+  
+  netB-proxy.envoy.localhost:
+    image: envoyproxy/envoy-dev:latest
+    volumes:
+      - ./netB-proxy/envoy.yaml:/etc/envoy.yaml
+    command: ["/usr/local/bin/envoy", "-c /etc/envoy.yaml"]
+    networks:
+      netB:
+      netC:
+
+  netC-proxy.envoy.localhost:
+    image: envoyproxy/envoy-dev:latest
+    volumes:
+      - ./netC-proxy/envoy.yaml:/etc/envoy.yaml
+    command: ["/usr/local/bin/envoy", "-c /etc/envoy.yaml"]
+    networks:
+      netC:
+      netD:
+
+  sshserver:
+    image: lscr.io/linuxserver/openssh-server:latest
+    environment:
+      - PASSWORD_ACCESS=true
+      - USER_NAME=admin
+      - USER_PASSWORD=admin
+    networks:
+      netD:
+
+networks:
+  netA:
+  netB:
+  netC:
+  netD:
